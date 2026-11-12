@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "collectionId": "glossary-atlas-template-demo",
+  "defaultAtlas": "demo",
+  "maxAtlases": 5,
+  "maxBytes": 20971520,
+  "atlases": [
+    {
+      "id": "demo",
+      "code": 1,
+      "contentRoot": "图鉴/demo",
+      "color": "#3559d8",
+      "mark": "bolt"
+    }
+  ]
+}

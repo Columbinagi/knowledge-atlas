@@ -1,0 +1,15 @@
+# 产物区：由源生成，可随时重建
+dist/*
+!dist/.gitkeep
+
+# 临时文件与运行记录
+*.tmp
+*.bak
+logs/
+
+# 系统文件
+Thumbs.db
+.DS_Store
+
+# 打包产物
+*.zip
