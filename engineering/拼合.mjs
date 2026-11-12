@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadAtlasLibrary, serializeAtlasLibrary } from './lib-atlas.mjs';
+import { loadAtlasLibrary, serializeAtlasLibrary, outputFileName } from './lib-atlas.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MARK_CFG = '/* ================== 模块配置区：接入时必改 ================== */';
@@ -14,10 +14,12 @@ function escMeta(value) {
 export function buildSite({
   contentDir = path.join(ROOT, 'content'),
   templatePath = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板.html'),
-  outPath = path.join(ROOT, 'dist', '新能源汽车知识图鉴.html')
+  outPath
 } = {}) {
   const library = loadAtlasLibrary(contentDir);
   const atlas = library.atlases.find(item => item.id === library.defaultAtlas);
+  /* 产物名唯一来源：SITE_META.outFile → brandName → 固定兜底（见 lib-atlas.outputFileName） */
+  const target = outPath || path.join(ROOT, 'dist', outputFileName(atlas));
   const template = fs.readFileSync(templatePath, 'utf8');
   const begin = template.indexOf(MARK_CFG), end = template.indexOf(MARK_ENG);
   if (begin < 0 || end < begin) throw new Error('母版标记定位失败');
@@ -46,8 +48,8 @@ export function buildSite({
   const output = head.replace(titlePattern, () => tags) + MARK_CFG + '\n' + serializeAtlasLibrary(library) + tail;
   const bytes = Buffer.byteLength(output, 'utf8');
   if (bytes > library.maxBytes) throw new Error('单文件体积超限：' + bytes + ' > ' + library.maxBytes + ' 字节，原产物未改动');
-  fs.writeFileSync(outPath, output, 'utf8');
-  return { bytes, characters: output.length, library, outPath };
+  fs.writeFileSync(target, output, 'utf8');
+  return { bytes, characters: output.length, library, outPath: target };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

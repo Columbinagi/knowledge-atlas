@@ -14,7 +14,7 @@ import { spawnSync } from 'child_process';
 import { pathToFileURL } from 'url';
 import { fileURLToPath } from 'url';
 import { parseKnowledgeDir, serializeTerms, entryToMd, deepEqual, parseChangelogMd } from './lib-md.mjs';
-import { readAtlasRegistry, atlasContentDir, selectAtlas, readAtlasConfig } from './lib-atlas.mjs';
+import { readAtlasRegistry, atlasContentDir, selectAtlas, readAtlasConfig, outputFileName } from './lib-atlas.mjs';
 import { makeTempDir } from './lib-temp.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -29,7 +29,9 @@ function getTempDir(){
   return tempRoot;
 }
 process.on('exit', () => { if (tempRoot) fs.rmSync(tempRoot, { recursive: true, force: true }); });
-const OUT = path.join(ROOT, 'dist', '新能源汽车知识图鉴.html');
+const DEFAULT_ENTRY = registry.atlases.find(a => a.id === registry.defaultAtlas) || registry.atlases[0];
+/* 产物名与拼合同源（SITE_META.outFile → brandName），不再各写一份固定文件名 */
+const OUT = path.join(ROOT, 'dist', outputFileName(readAtlasConfig(CONTENT_ROOT, DEFAULT_ENTRY)));
 /* v1.1.5（续 20 修复·F8）：Chrome 路径可被 JC_CHROME 覆盖 —— 让「无 Chrome 时的降级口径」
    本身可被自动化验证（把 JC_CHROME 指到一个不存在的路径即可造出降级场景），也让别的机器能改路径 */
 const CHROME = process.env.JC_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
@@ -421,7 +423,11 @@ if (terms){
   const topicOf = t => t.topic || config.CATEGORIES.find(c => c.id === t.cat)?.topic || config.DEFAULT_TOPIC;
   const first = terms.find(t => t.name && topicOf(t));
   const aliasTerm = terms.find(t => (t.aliases || []).some(a => String(a).trim()) || t.nameEn) || first;
-  const probes = atlas.id === 'nev' ? [{ query: '永磁', topic: 't5' }, { query: 'ycdj', topic: 't5' }]
+  /* 搜索探针：优先读该图鉴 SITE_META.searchProbe（[[查询词, 主题代号], …]）——
+     这样脚本里不再出现任何项目的专有词，探针值归各图鉴自己的配置。 */
+  const probeCfg = (config.SITE_META && config.SITE_META.searchProbe) || null;
+  const probes = Array.isArray(probeCfg) && probeCfg.length === 2
+    ? probeCfg.map(p => ({ query: p[0], topic: p[1] }))
     : first ? [
       { query: first.name, topic: topicOf(first) },
       { query: (aliasTerm.aliases || []).find(a => String(a).trim()) || aliasTerm.nameEn || aliasTerm.name, topic: topicOf(aliasTerm) }

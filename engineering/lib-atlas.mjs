@@ -65,6 +65,16 @@ export function readAtlasRegistry(contentDir) {
   return registry;
 }
 
+/** 产物文件名：优先 SITE_META.outFile，其次 brandName / pageTitle，最后固定兜底。
+ *  非法文件名字符统一替换为 '-'，避免品牌名里的斜杠、冒号把输出路径写坏。
+ *  为什么要有它：此前四处脚本各写一个固定中文名，派生项目必须手改四处；改成一个来源后只改配置。 */
+export function outputFileName(atlas) {
+  const meta = (atlas && atlas.SITE_META) || {};
+  const raw = meta.outFile || meta.brandName || meta.pageTitle || 'knowledge-atlas';
+  const safe = String(raw).replace(/[\\/:*?"<>|\u0000-\u001f]/g, '-').trim();
+  return (safe || 'knowledge-atlas') + '.html';
+}
+
 export function selectAtlas(registry, id, { requireExplicit = false } = {}) {
   if (!id && requireExplicit && registry.atlases.length > 1) {
     throw new Error('多图鉴写操作必须指定 --atlas=<id>');
