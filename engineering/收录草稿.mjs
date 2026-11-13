@@ -2,9 +2,9 @@
    engineering/收录草稿.mjs —— 把「审阅通过」的卡片草稿收录进知识库，并重建站点
    用法：node engineering/收录草稿.mjs <草稿文件> [--atlas=<id>] [--en] [--num=NNN] [--dry]
    多部图鉴时含 --dry 都必须显式选择；单部可默认。草稿实际路径必须在所选根的 草稿/ 内。
-   例：  node engineering/收录草稿.mjs content/图鉴/nev/草稿/motor-controller-mcu.md --atlas=nev
-         node engineering/收录草稿.mjs content/图鉴/nev/草稿/motor-controller-mcu.md --atlas=nev --num=165   （插到 160 与 170 之间）
-         node engineering/收录草稿.mjs content/图鉴/nev/草稿/pmsm-en.md --atlas=nev --en                     （英文译文卡）
+   例：  node engineering/收录草稿.mjs content/图鉴/<图鉴id>/草稿/<卡片id>.md --atlas=<图鉴id>
+         node engineering/收录草稿.mjs content/图鉴/<图鉴id>/草稿/<卡片id>.md --atlas=<图鉴id> --num=165   （插到 160 与 170 之间）
+         node engineering/收录草稿.mjs content/图鉴/<图鉴id>/草稿/<英文卡id>.md --atlas=<图鉴id> --en                     （英文译文卡）
    做四件事：① 解析并校验草稿 ② 分配主线编号 ③ 写入 知识库/<主题名>/ 并删除草稿 ④ 重建站点
    收尾仍要跑 `node engineering/校验.mjs`：0 错误才算收录完成（本脚本只做文件搬运与编号，不做内容判断）。
    草稿区（content/图鉴/<图鉴id>/草稿/）不被拼合读取，所以没审阅通过的草稿不会污染站点。
